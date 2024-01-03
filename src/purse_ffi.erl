@@ -1,3 +1,15 @@
 -module(purse_ffi).
 
-%% I actually may not need this too
+-export([insert/2]).
+
+insert(Table, KvPair) ->
+  try ets:insert(Table, KvPair) of
+    true ->
+      {_, Data} = KvPair,
+      {ok, Data};
+    _ ->
+      {error, nil}
+  catch
+    _:Reason ->
+      {error, Reason}
+  end.
