@@ -1,3 +1,4 @@
+import gleam/erlang/atom
 import gleam/dynamic
 import gleeunit
 import gleeunit/should
@@ -10,12 +11,6 @@ pub fn main() {
 
 pub type DummyTerm {
   DummyTerm
-}
-
-// We can't use the same type for both the insert and lookup tests because calling new with the same table name more than once will fail.
-pub type Users {
-  UsersForInsert
-  UsersForLookup
 }
 
 pub type Person {
@@ -34,7 +29,7 @@ fn decoder() {
 pub fn insert_test() {
   let table =
     named.new(
-      name: UsersForInsert,
+      name: atom.create_from_string("users_for_insert"),
       visibility: named.Public,
       table_type: named.Set,
       accepts: decoder(),
@@ -56,7 +51,7 @@ pub fn insert_test() {
 pub fn lookup_test() {
   let table =
     named.new(
-      name: UsersForLookup,
+      name: atom.create_from_string("users_for_lookup"),
       visibility: named.Public,
       table_type: named.Set,
       accepts: decoder(),

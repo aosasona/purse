@@ -1,6 +1,7 @@
 import gleam/bit_array
 import gleam/dynamic.{type DecodeError, type Dynamic}
 import gleam/erlang
+import gleam/erlang/atom.{type Atom}
 import gleam/list
 import gleam/io
 import gleam/int
@@ -15,16 +16,14 @@ import purse/named
 // |> create
 // for this, I would need to also filter out the options in each category to make sure that even if you set the same option twice, it only gets set once by picking the last one
 //
-//  but also with an option to do it all in one go if you want without
+//  but also with an option to do it all in one go if you want i.e. purse.new(name, [options...])
 
-pub type Test {
-  Test
-}
-
+// TODO: DELETE
 pub type Data {
   Data(key: String, value: String, point: Int)
 }
 
+// TODO: DELETE
 pub fn main() {
   let decoder =
     dynamic.decode3(
@@ -34,9 +33,11 @@ pub fn main() {
       dynamic.element(at: 3, of: dynamic.int),
     )
 
+  let table_name = atom.create_from_string("test")
+
   let t =
     named.new(
-      Test,
+      name: table_name,
       visibility: named.Public,
       table_type: named.Bag,
       accepts: decoder,
@@ -57,6 +58,7 @@ pub opaque type Key(t) {
   StringKey(String)
   IntKey(Int)
   TermKey(t)
+  AtomKey(Atom)
 }
 
 /// Creates a key from an integer
@@ -78,7 +80,20 @@ pub fn string(value: String) -> Key(String) {
   StringKey(value)
 }
 
-/// Creates a key from a term AKA any type
+/// Creates a key from an atom.
+///
+/// Atoms are never garbage collected, so you need to be careful with this one
+///
+/// # Example:
+/// ```gleam
+/// let assert Ok(key) = atom.from_string("foo")
+/// let key = purse.atom(key)
+/// ```
+pub fn atom(value: Atom) -> Key(Atom) {
+  AtomKey(value)
+}
+
+/// Creates a key from a term - you need to be VERY careful with this one, use it only if you know what you are doing
 ///
 /// Example:
 /// ```gleam
@@ -98,18 +113,19 @@ fn key_to_bit_array(key: Key(_)) -> BitArray {
     IntKey(i) -> int.to_string(i)
     StringKey(s) -> s
     TermKey(t) -> erlang.format(t)
+    AtomKey(a) -> atom.to_string(a)
   }
   |> bit_array.from_string
 }
 
 @external(erlang, "purse_ffi", "insert")
-fn do_insert(table: a, data: #(BitArray, b)) -> Result(b, Nil)
+fn do_insert(table: a, data: #(BitArray, b)) -> Result(b, Dynamic)
 
 pub fn insert(
   table table: core.Table(tname, model),
   key key: Key(_),
   value value: model,
-) -> Result(model, Nil) {
+) -> Result(model, Dynamic) {
   key
   |> key_to_bit_array
   |> fn(k) { #(k, value) }

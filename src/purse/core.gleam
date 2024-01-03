@@ -1,4 +1,5 @@
 import gleam/dynamic.{type DecodeError, type Decoder, type Dynamic}
+import gleam/erlang/atom.{type Atom}
 import gleam/erlang/process.{type Pid}
 import gleam/list
 
@@ -37,7 +38,7 @@ pub type Table(name, model) {
 ///
 /// ```
 pub fn new(
-  name name: a,
+  name name: Atom,
   accepts decoder: Decoder(b),
   options options: List(TableOptions(c)),
 ) -> Table(a, b) {
@@ -47,7 +48,7 @@ pub fn new(
 
 // TODO: rewrite as an FFI for crash safety
 @external(erlang, "ets", "new")
-pub fn do_new(name: a, options: List(TableOptions(b))) -> a
+pub fn do_new(name: Atom, options: List(TableOptions(b))) -> a
 
 pub fn decode_recursively(
   values: List(Dynamic),

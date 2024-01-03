@@ -4,6 +4,9 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/purse/)
 
 ```gleam
+import gleam/erlang/atom
+import gleam/dynamic
+import gleam/io
 import purse
 import purse/named
 
@@ -26,16 +29,16 @@ pub fn main() {
 
   let t =
     named.new(
-      name: Test,
+      name: atom.create_from_string("test"),
       visibility: named.Public,
       table_type: named.Bag,
       accepts: decoder,
     )
-  let _ = insert(t, string("foo"), Data("bar", "baz", 1))
-  let _ = insert(t, string("foo"), Data("ayy", "bee", 2))
-  let _ = insert(t, string("foo"), Data("cee", "dee", 3))
+  let _ = purse.insert(t, purse.string("foo"), Data("bar", "baz", 1))
+  let _ = purse.insert(t, purse.string("foo"), Data("ayy", "bee", 2))
+  let _ = purse.insert(t, purse.string("foo"), Data("cee", "dee", 3))
 
-  lookup(t, string("foo"))
+  purse.lookup(t, purse.string("foo"))
   |> io.debug
 
   Nil

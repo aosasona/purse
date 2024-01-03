@@ -1,3 +1,4 @@
+import gleam/erlang/atom.{type Atom}
 import gleam/dynamic.{type Decoder}
 import purse/core
 
@@ -31,7 +32,7 @@ pub type TableType {
 ///
 /// If you want more control over the table options, use `core.new` directly (re-exported as `purse.new`)
 pub fn new(
-  name name: a,
+  name name: Atom,
   visibility visibility: Visibility,
   table_type type_: TableType,
   accepts decoder: Decoder(b),
