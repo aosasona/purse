@@ -22,8 +22,9 @@ pub type TableOptions(a) {
   Heir(Pid, a)
 }
 
-pub type Table(name, model) =
-  #(name, Decoder(model))
+pub type Table(name, model) {
+  Table(name: name, decoder: Decoder(model))
+}
 
 /// Creates a new ETS table with the given name and options. You may want to look at `named.new`, it has lesser options but all you would usually need for a named table.
 ///
@@ -35,8 +36,13 @@ pub type Table(name, model) =
 ///
 ///
 /// ```
-pub fn new(name name: a, options options: List(TableOptions(c))) {
+pub fn new(
+  name name: a,
+  accepts decoder: Decoder(b),
+  options options: List(TableOptions(c)),
+) -> Table(a, b) {
   do_new(name, options)
+  |> Table(decoder)
 }
 
 // TODO: rewrite as an FFI for crash safety

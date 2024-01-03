@@ -1,5 +1,5 @@
 import gleam/bit_array
-import gleam/dynamic.{type DecodeError, type Decoder, type Dynamic}
+import gleam/dynamic.{type DecodeError, type Dynamic}
 import gleam/erlang
 import gleam/list
 import gleam/io
@@ -34,12 +34,18 @@ pub fn main() {
       dynamic.element(at: 3, of: dynamic.int),
     )
 
-  let t = named.new(Test, visibility: named.Public, table_type: named.Bag)
+  let t =
+    named.new(
+      Test,
+      visibility: named.Public,
+      table_type: named.Bag,
+      accepts: decoder,
+    )
   let _ = insert(t, string("foo"), Data("bar", "baz", 1))
-  let _ = insert(t, string("foo"), Data("bar1", "baz1", 2))
-  let _ = insert(t, string("foo"), Data("bar2", "baz2", 3))
+  let _ = insert(t, string("foo"), Data("ayy", "bee", 2))
+  let _ = insert(t, string("foo"), Data("cee", "dee", 3))
 
-  lookup(t, string("foo"), decoder)
+  lookup(t, string("foo"))
   |> io.debug
 
   Nil
@@ -54,12 +60,21 @@ pub opaque type Key(t) {
 }
 
 /// Creates a key from an integer
-pub fn int(value: Int) -> Key(_) {
+/// # Example:
+/// ```gleam
+/// let key = purse.int(1)
+/// ```
+pub fn int(value: Int) -> Key(Int) {
   IntKey(value)
 }
 
 /// Creates a key from a string
-pub fn string(value: String) -> Key(_) {
+///
+/// # Example:
+/// ```gleam
+/// let key = purse.string("foo")
+/// ```
+pub fn string(value: String) -> Key(String) {
   StringKey(value)
 }
 
@@ -90,11 +105,15 @@ fn key_to_bit_array(key: Key(_)) -> BitArray {
 @external(erlang, "purse_ffi", "insert")
 fn do_insert(table: a, data: #(BitArray, b)) -> Result(b, Nil)
 
-pub fn insert(table table: a, key key: Key(_), value value: b) -> Result(b, Nil) {
+pub fn insert(
+  table table: core.Table(tname, model),
+  key key: Key(_),
+  value value: model,
+) -> Result(model, Nil) {
   key
   |> key_to_bit_array
   |> fn(k) { #(k, value) }
-  |> do_insert(table, _)
+  |> do_insert(table.name, _)
 }
 
 // TODO: rewrite to be exception-safe in FFI
@@ -102,17 +121,16 @@ pub fn insert(table table: a, key key: Key(_), value value: b) -> Result(b, Nil)
 fn do_lookup(table: a, key: BitArray) -> List(#(BitArray, Dynamic))
 
 pub fn lookup(
-  table: a,
+  table: core.Table(_, model),
   key key: Key(_),
-  expecting decode: Decoder(b),
-) -> Result(List(b), List(DecodeError)) {
+) -> Result(List(model), List(DecodeError)) {
   let values =
     key
     |> key_to_bit_array
-    |> do_lookup(table, _)
+    |> do_lookup(table.name, _)
     |> list.map(fn(result) { result.1 })
 
-  use r <- core.decode_recursively(values, decode, [])
+  use r <- core.decode_recursively(values, table.decoder, [])
 
   Ok(r)
 }

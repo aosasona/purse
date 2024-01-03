@@ -1,3 +1,4 @@
+import gleam/dynamic.{type Decoder}
 import purse/core
 
 pub type Visibility {
@@ -33,12 +34,13 @@ pub fn new(
   name name: a,
   visibility visibility: Visibility,
   table_type type_: TableType,
-) -> a {
-  core.new(name, [
-    core.NamedTable,
-    to_visibility(visibility),
-    to_table_type(type_),
-  ])
+  accepts decoder: Decoder(b),
+) -> core.Table(a, b) {
+  core.new(
+    name: name,
+    options: [core.NamedTable, to_visibility(visibility), to_table_type(type_)],
+    accepts: decoder,
+  )
 }
 
 fn to_visibility(visibility: Visibility) -> core.TableOptions(_) {

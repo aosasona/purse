@@ -7,6 +7,14 @@
 import purse
 import purse/named
 
+pub type Test {
+  Test
+}
+
+pub type Data {
+  Data(key: String, value: String, point: Int)
+}
+
 pub fn main() {
   let decoder =
     dynamic.decode3(
@@ -16,13 +24,19 @@ pub fn main() {
       dynamic.element(at: 3, of: dynamic.int),
     )
 
-  let t = named.new(Test, visibility: named.Public, table_type: named.Set)
+  let t =
+    named.new(
+      name: Test,
+      visibility: named.Public,
+      table_type: named.Bag,
+      accepts: decoder,
+    )
+  let _ = insert(t, string("foo"), Data("bar", "baz", 1))
+  let _ = insert(t, string("foo"), Data("ayy", "bee", 2))
+  let _ = insert(t, string("foo"), Data("cee", "dee", 3))
 
-  let _ = purse.insert(t, string("foo"), Data("bar", "baz", 1))
-
-  let assert Ok([data]) = lookup(t, string("foo"), decoder)
-
-  io.debug(data)
+  lookup(t, string("foo"))
+  |> io.debug
 
   Nil
 }
