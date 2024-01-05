@@ -4,8 +4,8 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/purse/)
 
 ```gleam
-import gleam/erlang/atom
 import gleam/dynamic
+import gleam/erlang/atom
 import gleam/io
 import purse
 import purse/named
@@ -27,23 +27,28 @@ pub fn main() {
       dynamic.element(at: 3, of: dynamic.int),
     )
 
-  let t =
+  let table_name = atom.create_from_string("test")
+
+  let assert Ok(t) =
     named.new(
-      name: atom.create_from_string("test"),
+      name: table_name,
       visibility: named.Public,
       table_type: named.Bag,
       accepts: decoder,
     )
-  let _ = purse.insert(t, purse.string("foo"), Data("bar", "baz", 1))
-  let _ = purse.insert(t, purse.string("foo"), Data("ayy", "bee", 2))
-  let _ = purse.insert(t, purse.string("foo"), Data("cee", "dee", 3))
 
-  purse.lookup(t, purse.string("foo"))
+  let _ = insert(t, string("foo"), Data("bar", "baz", 1))
+  let _ = insert(t, string("foo"), Data("ayy", "bee", 2))
+  let _ = insert(t, string("foo"), Data("cee", "dee", 3))
+
+  lookup(t, string("foo"))
   |> io.debug
-
-  Nil
 }
 ```
+
+Running this produces the following output:
+
+> Ok([Data("cee", "dee", 3), Data("ayy", "bee", 2), Data("bar", "baz", 1)])
 
 ## Quick start
 
