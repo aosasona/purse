@@ -1,5 +1,5 @@
 import gleam/erlang/atom.{type Atom}
-import gleam/dynamic.{type Decoder}
+import gleam/dynamic.{type Decoder, type Dynamic}
 import purse/core
 
 pub type Visibility {
@@ -36,7 +36,7 @@ pub fn new(
   visibility visibility: Visibility,
   table_type type_: TableType,
   accepts decoder: Decoder(b),
-) -> core.Table(a, b) {
+) -> Result(core.Table(b), Dynamic) {
   core.new(
     name: name,
     options: [core.NamedTable, to_visibility(visibility), to_table_type(type_)],

@@ -1,10 +1,11 @@
 import gleam/bit_array
-import gleam/dynamic.{type DecodeError, type Dynamic}
+import gleam/dynamic.{type Dynamic}
 import gleam/erlang
 import gleam/erlang/atom.{type Atom}
 import gleam/list
 import gleam/io
 import gleam/int
+import gleam/result
 import purse/core
 import purse/named
 
@@ -35,13 +36,14 @@ pub fn main() {
 
   let table_name = atom.create_from_string("test")
 
-  let t =
+  let assert Ok(t) =
     named.new(
       name: table_name,
       visibility: named.Public,
       table_type: named.Bag,
       accepts: decoder,
     )
+
   let _ = insert(t, string("foo"), Data("bar", "baz", 1))
   let _ = insert(t, string("foo"), Data("ayy", "bee", 2))
   let _ = insert(t, string("foo"), Data("cee", "dee", 3))
@@ -122,7 +124,7 @@ fn key_to_bit_array(key: Key(_)) -> BitArray {
 fn do_insert(table: a, data: #(BitArray, b)) -> Result(b, Dynamic)
 
 pub fn insert(
-  table table: core.Table(tname, model),
+  table table: core.Table(model),
   key key: Key(_),
   value value: model,
 ) -> Result(model, Dynamic) {
@@ -132,21 +134,28 @@ pub fn insert(
   |> do_insert(table.name, _)
 }
 
-// TODO: rewrite to be exception-safe in FFI
-@external(erlang, "ets", "lookup")
-fn do_lookup(table: a, key: BitArray) -> List(#(BitArray, Dynamic))
+@external(erlang, "purse_ffi", "lookup")
+fn do_lookup(
+  table: Atom,
+  key: BitArray,
+) -> Result(List(#(BitArray, Dynamic)), Dynamic)
 
 pub fn lookup(
-  table: core.Table(_, model),
+  table: core.Table(model),
   key key: Key(_),
-) -> Result(List(model), List(DecodeError)) {
-  let values =
+) -> Result(List(model), core.LookupError) {
+  use kv_pairs <- result.try(
     key
     |> key_to_bit_array
     |> do_lookup(table.name, _)
+    |> result.map_error(fn(e) { core.SystemException(e) }),
+  )
+
+  let values =
+    kv_pairs
     |> list.map(fn(result) { result.1 })
 
-  use r <- core.decode_recursively(values, table.decoder, [])
+  use decoded_values <- core.decode_recursively(values, table.decoder, [])
 
-  Ok(r)
+  Ok(decoded_values)
 }

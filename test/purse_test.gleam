@@ -26,8 +26,18 @@ fn decoder() {
   )
 }
 
+pub fn new_test() {
+  named.new(
+    name: atom.create_from_string("users"),
+    visibility: named.Public,
+    table_type: named.Set,
+    accepts: decoder(),
+  )
+  |> should.be_ok
+}
+
 pub fn insert_test() {
-  let table =
+  let assert Ok(table) =
     named.new(
       name: atom.create_from_string("users_for_insert"),
       visibility: named.Public,
@@ -49,7 +59,7 @@ pub fn insert_test() {
 }
 
 pub fn lookup_test() {
-  let table =
+  let assert Ok(table) =
     named.new(
       name: atom.create_from_string("users_for_lookup"),
       visibility: named.Public,
