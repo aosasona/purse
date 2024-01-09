@@ -1,6 +1,6 @@
 -module(purse_ffi).
 
--export([insert/2, lookup/2, new/2]).
+-export([insert/2, lookup/2, new/2, drop_table/1]).
 
 new(Name, Options) ->
   try
@@ -25,6 +25,17 @@ insert(Table, KvPair) ->
 lookup(Table, Key) ->
   try
     {ok, ets:lookup(Table, Key)}
+  catch
+    _:Reason ->
+      {error, Reason}
+  end.
+
+drop_table(Table) ->
+  try ets:delete(Table) of
+    true ->
+      {ok, nil};
+    _ ->
+      {error, nil}
   catch
     _:Reason ->
       {error, Reason}

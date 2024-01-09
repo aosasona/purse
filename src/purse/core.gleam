@@ -4,6 +4,7 @@ import gleam/erlang/process.{type Pid}
 import gleam/list
 import gleam/result
 
+// TODO: complete table options
 pub type TableOptions(a) {
   NamedTable
 
@@ -25,13 +26,19 @@ pub type TableOptions(a) {
 }
 
 pub type Table(model) {
-  Table(name: Atom, decoder: Decoder(model))
+  Table(name: Atom, decoder: Decoder(model), is_persisted: Bool)
 }
 
-pub type LookupError {
+pub type PurseError {
   SystemException(Dynamic)
   DecodeError(List(DecodeError))
 }
+
+@external(erlang, "purse_ffi", "new")
+pub fn do_new(
+  name: Atom,
+  options: List(TableOptions(b)),
+) -> Result(Atom, Dynamic)
 
 /// Creates a new ETS table with the given name and options. You may want to look at `named.new`, it has lesser options but all you would usually need for a named table.
 ///
@@ -47,24 +54,21 @@ pub fn new(
   name name: Atom,
   accepts decoder: Decoder(b),
   options options: List(TableOptions(c)),
-) -> Result(Table(b), Dynamic) {
-  use table_name <- result.try(do_new(name, options))
+) -> Result(Table(b), PurseError) {
+  use table_name <- result.try(
+    do_new(name, options)
+    |> result.map_error(fn(e) { SystemException(e) }),
+  )
 
-  Ok(Table(table_name, decoder))
+  Ok(Table(table_name, decoder, False))
 }
-
-@external(erlang, "purse_ffi", "new")
-pub fn do_new(
-  name: Atom,
-  options: List(TableOptions(b)),
-) -> Result(Atom, Dynamic)
 
 pub fn decode_recursively(
   values: List(Dynamic),
   decode: Decoder(a),
   state: List(a),
-  next: fn(List(a)) -> Result(List(a), LookupError),
-) -> Result(List(a), LookupError) {
+  next: fn(List(a)) -> Result(List(a), PurseError),
+) -> Result(List(a), PurseError) {
   case values {
     [] -> next(state)
     [raw_value, ..rest] ->
@@ -76,3 +80,4 @@ pub fn decode_recursively(
       }
   }
 }
+// TODO: move all persisted and non-persisted functions here

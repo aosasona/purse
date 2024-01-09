@@ -9,6 +9,12 @@ licences = ["Apache-2.0"]
 repository = { type = "github", user = "aosasona", repo = "purse" }
 # links = [{ title = "Website", href = "https://gleam.run" }]
 
+gleam = ">= 0.33.0"
+
+internal_modules = [
+  "purse/internal/*"
+]
+
 [dependencies]
 gleam_stdlib = "~> 0.34"
 gleam_erlang = "~> 0.23"
