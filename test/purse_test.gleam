@@ -2,6 +2,7 @@ import gleam/erlang/atom
 import gleam/dynamic
 import gleeunit
 import gleeunit/should
+import purse/core
 import purse/named
 import purse
 
@@ -24,6 +25,31 @@ fn decoder() {
     dynamic.element(2, dynamic.string),
     dynamic.element(3, dynamic.int),
   )
+}
+
+pub fn unnamed_table_test() {
+  // Testing unnamed table
+  let other_table_name = atom.create_from_string("other_table")
+
+  let tb =
+    purse.new(other_table_name, decoder(), [core.Set])
+    |> should.be_ok
+
+  purse.insert(tb, purse.string("foo"), Person("John", "Doe", 19))
+  |> should.be_ok
+  |> should.equal(Person("John", "Doe", 19))
+
+  purse.lookup(tb, purse.string("foo"))
+  |> should.be_ok
+  |> should.equal([Person("John", "Doe", 19)])
+
+  purse.drop_table(tb)
+  |> should.be_ok
+  |> should.equal(Nil)
+
+  // should fail
+  purse.lookup(tb, purse.string("foo"))
+  |> should.be_error
 }
 
 pub fn new_test() {
