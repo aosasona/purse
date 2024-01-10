@@ -123,6 +123,7 @@ fn key_to_bit_array(key: Key(_)) -> BitArray {
   |> bit_array.from_string
 }
 
+/// Inserts a value into a table
 pub fn insert(
   table table: Table(model),
   key key: Key(_),
@@ -135,6 +136,7 @@ pub fn insert(
   |> result.map_error(fn(e) { SystemException(e) })
 }
 
+/// Looks up a value in a table by key
 pub fn lookup(
   table: Table(model),
   key key: Key(_),
@@ -155,6 +157,7 @@ pub fn lookup(
   Ok(decoded_values)
 }
 
+/// Drops a table, deleting all of its contents - this is irreversible
 pub fn drop_table(table: Table(_)) -> Result(Nil, PurseError) {
   ffi.do_drop_table(table.name)
   |> result.map_error(fn(e) { SystemException(e) })

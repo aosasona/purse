@@ -4,7 +4,7 @@ version = "1.0.0"
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
 #
-description = "Gleam library for working with Erlang ETS"
+description = "Gleam library for working with Erlang ETS and DETS"
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "aosasona", repo = "purse" }
 # links = [{ title = "Website", href = "https://gleam.run" }]

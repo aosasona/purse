@@ -11,5 +11,9 @@ pub fn do_lookup(
   key: BitArray,
 ) -> Result(List(#(BitArray, Dynamic)), Dynamic)
 
+// TODO: implement this
+@external(erlang, "purse_ffi", "delete")
+pub fn do_delete(table: Atom, key: BitArray) -> Result(Nil, Dynamic)
+
 @external(erlang, "purse_ffi", "drop_table")
 pub fn do_drop_table(table: Atom) -> Result(Nil, Dynamic)
