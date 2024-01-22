@@ -132,7 +132,7 @@ pub fn insert(
   key
   |> key_to_bit_array
   |> fn(k) { #(k, value) }
-  |> ffi.do_insert(table.name, _)
+  |> ffi.insert(table.name, _)
   |> result.map_error(fn(e) { SystemException(e) })
 }
 
@@ -144,7 +144,7 @@ pub fn lookup(
   use kv_pairs <- result.try(
     key
     |> key_to_bit_array
-    |> ffi.do_lookup(table.name, _)
+    |> ffi.lookup(table.name, _)
     |> result.map_error(fn(e) { SystemException(e) }),
   )
 
@@ -159,6 +159,6 @@ pub fn lookup(
 
 /// Drops a table, deleting all of its contents - this is irreversible
 pub fn drop_table(table: Table(_)) -> Result(Nil, PurseError) {
-  ffi.do_drop_table(table.name)
+  ffi.drop_table(table.name)
   |> result.map_error(fn(e) { SystemException(e) })
 }

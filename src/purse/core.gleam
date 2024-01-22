@@ -22,7 +22,15 @@ pub type TableOptions(a) {
 
   Protected
 
-  Heir(Pid, a)
+  Heir(Pid, Atom)
+
+  WriteConcurrency(a)
+
+  ReadConcurrency(Bool)
+
+  DecentralizedCounters(Bool)
+
+  Compressed
 }
 
 pub type Table(model) {
@@ -61,6 +69,10 @@ pub fn new(
   )
 
   Ok(Table(table_name, decoder, False))
+}
+
+pub fn rename(table: Table(b), name: Atom) -> Result(Atom, PurseError) {
+  todo
 }
 
 pub fn decode_recursively(
