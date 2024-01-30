@@ -1,6 +1,7 @@
 import gleam/option.{type Option}
 import gleam/erlang/atom.{type Atom}
 import gleam/dynamic.{type Dynamic}
+import purse/types.{type TableName}
 
 // Non-persistent functions
 
@@ -39,9 +40,8 @@ pub fn rename_table(table: Atom, name: Atom) -> Result(Atom, Dynamic)
 @external(erlang, "purse_ffi", "purge_table")
 pub fn purge_table(table: Atom) -> Result(Nil, Dynamic)
 
-// TODO: implement this
 @external(erlang, "purse_ffi", "list_tables")
-pub fn list_tables() -> Result(List(Dynamic), Dynamic)
+pub fn list_tables() -> Result(List(TableName), Dynamic)
 
 @external(erlang, "purse_ffi", "drop_table")
 pub fn drop_table(table: Atom) -> Result(Nil, Dynamic)

@@ -9,6 +9,7 @@ import gleam/result
 import purse/core.{type PurseError, type Table, SystemException}
 import purse/named
 import purse/internal/ffi
+import purse/types.{type TableName}
 
 // I am going to go with a builder patterns like so
 // new_builder(Name)
@@ -160,5 +161,11 @@ pub fn lookup(
 /// Drops a table, deleting all of its contents - this is irreversible
 pub fn drop_table(table: Table(_)) -> Result(Nil, PurseError) {
   ffi.drop_table(table.name)
+  |> result.map_error(fn(e) { SystemException(e) })
+}
+
+/// Returns a list of all tables in the current node. This function returns a dynamic list because a table name is not guaranteed to be an atom, it could be a `tid()`
+pub fn list_tables() -> Result(List(TableName), PurseError) {
+  ffi.list_tables()
   |> result.map_error(fn(e) { SystemException(e) })
 }

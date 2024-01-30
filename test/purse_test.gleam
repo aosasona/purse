@@ -1,10 +1,12 @@
 import gleam/erlang/atom
 import gleam/dynamic
+import gleam/list
 import gleeunit
 import gleeunit/should
+import purse
 import purse/core
 import purse/named
-import purse
+import purse/types.{Named}
 
 pub fn main() {
   gleeunit.main()
@@ -117,4 +119,41 @@ pub fn lookup_test() {
   purse.lookup(table, key: purse.string("foo"))
   |> should.be_ok
   |> should.equal([person3])
+}
+
+pub fn list_tables_test() {
+  let table_one = atom.create_from_string("table_one")
+  let table_two = atom.create_from_string("table_two")
+
+  named.new(
+    name: table_one,
+    visibility: named.Public,
+    table_type: named.Set,
+    accepts: decoder(),
+  )
+  |> should.be_ok
+
+  named.new(
+    name: table_two,
+    visibility: named.Public,
+    table_type: named.Set,
+    accepts: decoder(),
+  )
+  |> should.be_ok
+
+  // Filter out all other tables except the two we created and the final result MUST contain only those two tables proving they actually exist in the list
+  purse.list_tables()
+  |> should.be_ok
+  |> list.filter(fn(table) {
+    case table {
+      Named(name) ->
+        case name {
+          x if x == table_one -> True
+          x if x == table_two -> True
+          _ -> False
+        }
+      _ -> False
+    }
+  })
+  |> should.equal([Named(table_one), Named(table_two)])
 }

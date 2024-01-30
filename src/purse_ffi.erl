@@ -1,6 +1,6 @@
 -module(purse_ffi).
 
--export([insert/2, lookup/2, new/2, drop_table/1]).
+-export([insert/2, lookup/2, new/2, drop_table/1, list_tables/0]).
 
 new(Name, Options) ->
   try
@@ -39,4 +39,21 @@ drop_table(Table) ->
   catch
     _:Reason ->
       {error, Reason}
+  end.
+
+list_tables() ->
+  try ets:all() of
+    Tables ->
+      {ok, lists:map(fun table_name_to_gleam_type/1, Tables)}
+  catch
+    _:Reason ->
+      {error, Reason}
+  end.
+
+table_name_to_gleam_type(Table) ->
+  case Table of
+    T when is_atom(Table) ->
+      {named, T};
+    _ ->
+      {tid, Table}
   end.
