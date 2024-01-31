@@ -75,6 +75,50 @@ pub fn lookup_test() {
   |> should.equal([person3])
 }
 
+pub fn delete_test() {
+  let assert Ok(table) =
+    ets.new(
+      name: atom.create_from_string("users_delete_test"),
+      accepts: decoder(),
+      options: [ets.DuplicateBag, ets.Protected, ets.NamedTable],
+    )
+
+  let assert Ok(p1) =
+    ets.insert(
+      table,
+      key: purse.string("human"),
+      value: Person("John", "Doe", 19),
+    )
+
+  let assert Ok(p2) =
+    ets.insert(
+      table,
+      key: purse.string("human"),
+      value: Person("Bane", "Cheeks", 20),
+    )
+
+  let assert Ok(p3) =
+    ets.insert(
+      table,
+      key: purse.string("human"),
+      value: Person("Dean", "Smith", 19),
+    )
+
+  // Check that all three entries were actually inserted
+  ets.lookup(table, key: purse.string("human"))
+  |> should.be_ok
+  |> should.equal([p3, p2, p1])
+
+  // Delete all entries with the key "human"
+  ets.delete(table, key: purse.string("human"))
+  |> should.be_ok
+
+  ets.lookup(table, key: purse.string("human"))
+  |> should.be_ok
+  |> should.equal([])
+}
+
+/// Lookup should now return an empty list
 pub fn list_tables_test() {
   let table_one = atom.create_from_string("table_one")
   let table_two = atom.create_from_string("table_two")

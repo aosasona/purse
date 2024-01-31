@@ -13,7 +13,6 @@ pub fn lookup(
   key: BitArray,
 ) -> Result(List(#(BitArray, Dynamic)), Dynamic)
 
-// TODO: implement this in `../../purse.gleam`
 @external(erlang, "purse_ffi", "delete")
 pub fn delete(table: Atom, key: BitArray) -> Result(Nil, Dynamic)
 

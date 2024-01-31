@@ -45,7 +45,7 @@ pub fn new(
   )
 }
 
-fn to_visibility(visibility: Visibility) -> ets.TableOptions(_) {
+fn to_visibility(visibility: Visibility) -> ets.TableOptions {
   case visibility {
     Protected -> ets.Protected
     Public -> ets.Public
@@ -53,7 +53,7 @@ fn to_visibility(visibility: Visibility) -> ets.TableOptions(_) {
   }
 }
 
-fn to_table_type(type_: TableType) -> ets.TableOptions(_) {
+fn to_table_type(type_: TableType) -> ets.TableOptions {
   case type_ {
     Set -> ets.Set
     OrderedSet -> ets.OrderedSet

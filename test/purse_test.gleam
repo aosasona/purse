@@ -1,10 +1,8 @@
-import gleam/erlang/atom
-import gleam/dynamic
-import gleam/list
 import gleeunit
-import gleeunit/should
-import purse
-import purse/core
+
+// import gleam/dynamic
+
+// import gleeunit/should
 
 pub fn main() {
   gleeunit.main()
@@ -17,15 +15,14 @@ pub type DummyTerm {
 pub type Person {
   Person(first_name: String, last_name: String, age: Int)
 }
-
-fn decoder() {
-  dynamic.decode3(
-    Person,
-    dynamic.element(1, dynamic.string),
-    dynamic.element(2, dynamic.string),
-    dynamic.element(3, dynamic.int),
-  )
-}
+// fn decoder() {
+//   dynamic.decode3(
+//     Person,
+//     dynamic.element(1, dynamic.string),
+//     dynamic.element(2, dynamic.string),
+//     dynamic.element(3, dynamic.int),
+//   )
+// }
 // pub fn unnamed_table_test() {
 //   // Testing unnamed table
 //   let other_table_name = atom.create_from_string("other_table")

@@ -9,31 +9,51 @@ import purse/core.{
 }
 import purse/internal/ffi
 
-pub type TableOptions(a) {
+pub type WriteConcurrencyAlternative {
+  Auto
+}
+
+pub type TableOptions {
+  /// When present, the table is registered under the given name and can be referenced with that name instead of a `tid()`.
   NamedTable
 
+  /// The table is a set table: one key, one object, unordered. This is the default.
   Set
 
+  /// The table is an ordered set table: one key, one object, ordere in Erlang term order.
   OrderedSet
 
+  /// The table is a bag table: many objects, but only one copy/instance of each object per key.
   Bag
 
+  /// The table is a duplicate bag table: many objects, and multiple copies of the same object per key.
   DuplicateBag
 
+  /// Any process can read and write to this table.
   Public
 
+  /// Only the owner process can read and write to this table.
   Private
 
+  /// Only the owner process can both read and write to this table, other processes can ONLY read from it. This is the default.
   Protected
 
+  /// Set a process as heir to the table. If the owner process dies, the heir process will become the new owner. The heir must be a **LOCAL** process.
+  /// This library has no way to set heir to none (for now, due to naming conflicts), but it is the default and you don't need to worry about it unless you want to actually set an heir.
   Heir(Pid, Atom)
 
-  WriteConcurrency(a)
+  /// Performance tuning. See https://www.erlang.org/doc/man/ets for more information. This library has no way to provide other values other than `auto`, the default is false.
+  WriteConcurrency(WriteConcurrencyAlternative)
 
+  /// Performance tuning. Defaults to false. When set to true, the table is optimized for concurrent read operations. When this option is enabled read operations become much cheaper; especially on systems with multiple physical processors. However, switching between read and write operations becomes more expensive.
+  /// See https://www.erlang.org/doc/man/ets
   ReadConcurrency(Bool)
 
+  /// Performance tuning. Defaults to true for all tables with the `write_concurrency` option set to auto. For tables of type `ordered_set` the option also defaults to true when the `write_concurrency` option is set to true. The option defaults to false for all other configurations. This option has no effect if the `write_concurrency` option is set to false.
+  /// See https://www.erlang.org/doc/man/ets
   DecentralizedCounters(Bool)
 
+  /// If this option is present, the table data is stored in a more compact format to consume less memory. However, it will make table operations slower. Especially operations that need to inspect entire objects, such as match and select, get much slower. The key element is not compressed.
   Compressed
 }
 
@@ -50,7 +70,7 @@ pub type TableOptions(a) {
 pub fn new(
   name name: Atom,
   accepts decoder: Decoder(b),
-  options options: List(TableOptions(c)),
+  options options: List(TableOptions),
 ) -> Result(Table(b), PurseError) {
   use table_name <- result.try(
     do_new(name, options)
@@ -61,10 +81,7 @@ pub fn new(
 }
 
 @external(erlang, "purse_ffi", "new")
-pub fn do_new(
-  name: Atom,
-  options: List(TableOptions(b)),
-) -> Result(Atom, Dynamic)
+pub fn do_new(name: Atom, options: List(TableOptions)) -> Result(Atom, Dynamic)
 
 /// Inserts a value into a table
 pub fn insert(
