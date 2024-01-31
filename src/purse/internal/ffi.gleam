@@ -1,9 +1,8 @@
-import gleam/option.{type Option}
 import gleam/erlang/atom.{type Atom}
 import gleam/dynamic.{type Dynamic}
-import purse/types.{type TableName}
+import purse/core.{type TableName}
 
-// Non-persistent functions
+// ---- Non-persistent functions
 
 @external(erlang, "purse_ffi", "insert")
 pub fn insert(table: a, data: #(BitArray, b)) -> Result(b, Dynamic)
@@ -14,19 +13,13 @@ pub fn lookup(
   key: BitArray,
 ) -> Result(List(#(BitArray, Dynamic)), Dynamic)
 
-// TODO: implement this
-// TODO: test for $end_of_table
-@external(erlang, "purse_ffi", "next")
-pub fn next(table: Atom, key: BitArray) -> Result(Option(BitArray), Dynamic)
-
-// TODO: implement this
-// TODO: test for $end_of_table
-@external(erlang, "purse_ffi", "prev")
-pub fn prev(table: Atom, key: BitArray) -> Result(Option(BitArray), Dynamic)
-
-// TODO: implement this
+// TODO: implement this in `../../purse.gleam`
 @external(erlang, "purse_ffi", "delete")
 pub fn delete(table: Atom, key: BitArray) -> Result(Nil, Dynamic)
+
+// TODO: implement this
+@external(erlang, "purse_ffi", "delete_object")
+pub fn delete_object(table: Atom, object: a) -> Result(Nil, Dynamic)
 
 // TODO: implement this
 @external(erlang, "purse_ffi", "all")

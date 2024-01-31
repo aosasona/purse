@@ -1,6 +1,7 @@
 import gleam/erlang/atom.{type Atom}
 import gleam/dynamic.{type Decoder}
 import purse/core
+import purse/ets
 
 pub type Visibility {
   // Read available to all processes, write available to owner - default
@@ -37,26 +38,26 @@ pub fn new(
   table_type type_: TableType,
   accepts decoder: Decoder(b),
 ) -> Result(core.Table(b), core.PurseError) {
-  core.new(
+  ets.new(
     name: name,
-    options: [core.NamedTable, to_visibility(visibility), to_table_type(type_)],
+    options: [ets.NamedTable, to_visibility(visibility), to_table_type(type_)],
     accepts: decoder,
   )
 }
 
-fn to_visibility(visibility: Visibility) -> core.TableOptions(_) {
+fn to_visibility(visibility: Visibility) -> ets.TableOptions(_) {
   case visibility {
-    Protected -> core.Protected
-    Public -> core.Public
-    Private -> core.Private
+    Protected -> ets.Protected
+    Public -> ets.Public
+    Private -> ets.Private
   }
 }
 
-fn to_table_type(type_: TableType) -> core.TableOptions(_) {
+fn to_table_type(type_: TableType) -> ets.TableOptions(_) {
   case type_ {
-    Set -> core.Set
-    OrderedSet -> core.OrderedSet
-    Bag -> core.Bag
-    DuplicateBag -> core.DuplicateBag
+    Set -> ets.Set
+    OrderedSet -> ets.OrderedSet
+    Bag -> ets.Bag
+    DuplicateBag -> ets.DuplicateBag
   }
 }

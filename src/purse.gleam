@@ -1,15 +1,10 @@
-import gleam/bit_array
 import gleam/dynamic
-import gleam/erlang
-import gleam/erlang/atom.{type Atom}
-import gleam/list
+import gleam/erlang/atom
 import gleam/io
-import gleam/int
-import gleam/result
-import purse/core.{type PurseError, type Table, SystemException}
-import purse/named
-import purse/internal/ffi
-import purse/types.{type TableName}
+import purse/core.{type Key, type PurseError, type Table, type TableName}
+import purse/ets
+import purse/dets
+import purse/common/named
 
 // I am going to go with a builder patterns like so
 // new_builder(Name)
@@ -56,73 +51,17 @@ pub fn main() {
   Nil
 }
 
-// TODO: add delete and `dets` support
+pub const new_ets_table = ets.new
 
-pub const new = core.new
+pub const new_dets_table = dets.new
 
-pub opaque type Key(t) {
-  StringKey(String)
-  IntKey(Int)
-  TermKey(t)
-  AtomKey(Atom)
-}
+pub const string = core.string
 
-/// Creates a key from an integer
-/// # Example:
-/// ```gleam
-/// let key = purse.int(1)
-/// ```
-pub fn int(value: Int) -> Key(Int) {
-  IntKey(value)
-}
+pub const int = core.int
 
-/// Creates a key from a string
-///
-/// # Example:
-/// ```gleam
-/// let key = purse.string("foo")
-/// ```
-pub fn string(value: String) -> Key(String) {
-  StringKey(value)
-}
+pub const term = core.term
 
-/// Creates a key from an atom.
-///
-/// Atoms are never garbage collected, so you need to be careful with this one
-///
-/// # Example:
-/// ```gleam
-/// let assert Ok(key) = atom.from_string("foo")
-/// let key = purse.atom(key)
-/// ```
-pub fn atom(value: Atom) -> Key(Atom) {
-  AtomKey(value)
-}
-
-/// Creates a key from a term - you need to be VERY careful with this one, use it only if you know what you are doing
-///
-/// Example:
-/// ```gleam
-/// type Foo {
-///   Foo
-/// }
-///
-/// let key = purse.term(Foo)
-/// ```
-///
-pub fn term(value: t) -> Key(t) {
-  TermKey(value)
-}
-
-fn key_to_bit_array(key: Key(_)) -> BitArray {
-  case key {
-    IntKey(i) -> int.to_string(i)
-    StringKey(s) -> s
-    TermKey(t) -> erlang.format(t)
-    AtomKey(a) -> atom.to_string(a)
-  }
-  |> bit_array.from_string
-}
+pub const atom = core.atom
 
 /// Inserts a value into a table
 pub fn insert(
@@ -130,11 +69,7 @@ pub fn insert(
   key key: Key(_),
   value value: model,
 ) -> Result(model, PurseError) {
-  key
-  |> key_to_bit_array
-  |> fn(k) { #(k, value) }
-  |> ffi.insert(table.name, _)
-  |> result.map_error(fn(e) { SystemException(e) })
+  todo
 }
 
 /// Looks up a value in a table by key
@@ -142,30 +77,20 @@ pub fn lookup(
   table: Table(model),
   key key: Key(_),
 ) -> Result(List(model), PurseError) {
-  use kv_pairs <- result.try(
-    key
-    |> key_to_bit_array
-    |> ffi.lookup(table.name, _)
-    |> result.map_error(fn(e) { SystemException(e) }),
-  )
+  todo
+}
 
-  let values =
-    kv_pairs
-    |> list.map(fn(result) { result.1 })
-
-  use decoded_values <- core.decode_recursively(values, table.decoder, [])
-
-  Ok(decoded_values)
+/// Deletes all objects with the given key from the table
+pub fn delete(table: Table(_), key key: Key(_)) -> Result(Nil, PurseError) {
+  todo
 }
 
 /// Drops a table, deleting all of its contents - this is irreversible
 pub fn drop_table(table: Table(_)) -> Result(Nil, PurseError) {
-  ffi.drop_table(table.name)
-  |> result.map_error(fn(e) { SystemException(e) })
+  todo
 }
 
 /// Returns a list of all tables in the current node. This function returns a dynamic list because a table name is not guaranteed to be an atom, it could be a `tid()`
 pub fn list_tables() -> Result(List(TableName), PurseError) {
-  ffi.list_tables()
-  |> result.map_error(fn(e) { SystemException(e) })
+  todo
 }

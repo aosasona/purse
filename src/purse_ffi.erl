@@ -1,6 +1,6 @@
 -module(purse_ffi).
 
--export([insert/2, lookup/2, new/2, drop_table/1, list_tables/0]).
+-export([insert/2, lookup/2, delete/2, new/2, drop_table/1, list_tables/0]).
 
 new(Name, Options) ->
   try
@@ -45,6 +45,17 @@ list_tables() ->
   try ets:all() of
     Tables ->
       {ok, lists:map(fun table_name_to_gleam_type/1, Tables)}
+  catch
+    _:Reason ->
+      {error, Reason}
+  end.
+
+delete(Table, Key) ->
+  try ets:delete(Table, Key) of
+    true ->
+      {ok, nil};
+    _ ->
+      {error, nil}
   catch
     _:Reason ->
       {error, Reason}
