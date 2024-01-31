@@ -7,20 +7,19 @@ import purse/core.{type TableName}
 @external(erlang, "purse_ffi", "insert")
 pub fn insert(table: a, data: #(BitArray, b)) -> Result(b, Dynamic)
 
+@external(erlang, "purse_ffi", "insert")
+pub fn insert_many(
+  table: a,
+  data: #(BitArray, List(b)),
+) -> Result(Dynamic, Dynamic)
+
 @external(erlang, "purse_ffi", "lookup")
-pub fn lookup(
-  table: Atom,
-  key: BitArray,
-) -> Result(List(#(BitArray, Dynamic)), Dynamic)
+pub fn lookup(table: Atom, key: BitArray) -> Result(Dynamic, Dynamic)
 
 @external(erlang, "purse_ffi", "delete")
 pub fn delete(table: Atom, key: BitArray) -> Result(Nil, Dynamic)
 
-// TODO: implement this
-@external(erlang, "purse_ffi", "delete_object")
-pub fn delete_object(table: Atom, object: a) -> Result(Nil, Dynamic)
-
-// TODO: implement this
+// TODO: implement this - should be dynamic decoded into a list of _
 @external(erlang, "purse_ffi", "all")
 pub fn all(table: Atom) -> Result(List(Dynamic), Dynamic)
 

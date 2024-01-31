@@ -1,6 +1,7 @@
 -module(purse_ffi).
 
--export([insert/2, lookup/2, delete/2, new/2, drop_table/1, list_tables/0]).
+-export([insert/2, lookup/2, delete/2, new/2, drop_table/1,
+         list_tables/0]).
 
 new(Name, Options) ->
   try

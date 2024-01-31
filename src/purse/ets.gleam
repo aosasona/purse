@@ -4,8 +4,8 @@ import gleam/erlang/process.{type Pid}
 import gleam/list
 import gleam/result
 import purse/core.{
-  type Key, type PurseError, type Table, type TableName, SystemException, Table,
-  key_to_bit_array,
+  type Key, type PurseError, type Table, type TableName, DecodeError,
+  SystemException, Table, key_to_bit_array,
 }
 import purse/internal/ffi
 
@@ -83,17 +83,39 @@ pub fn new(
 @external(erlang, "purse_ffi", "new")
 pub fn do_new(name: Atom, options: List(TableOptions)) -> Result(Atom, Dynamic)
 
-/// Inserts a value into a table
+/// Inserts an object into a table
 pub fn insert(
   table table: Table(model),
   key key: Key(_),
-  value value: model,
+  value object: model,
 ) -> Result(model, PurseError) {
   key
   |> key_to_bit_array
-  |> fn(k) { #(k, value) }
+  |> fn(k) { #(k, object) }
   |> ffi.insert(table.name, _)
   |> result.map_error(fn(e) { SystemException(e) })
+}
+
+/// Inserts multiple objects into a table.
+pub fn insert_many(
+  table table: Table(model),
+  key key: Key(_),
+  objects objects: List(model),
+) -> Result(List(model), PurseError) {
+  use created_objects <- result.try(
+    key
+    |> key_to_bit_array
+    |> fn(k) { #(k, objects) }
+    |> ffi.insert_many(table.name, _)
+    |> result.map_error(fn(e) { SystemException(e) }),
+  )
+
+  use decoded_objects <- result.try(
+    dynamic.list(of: table.decoder)(created_objects)
+    |> result.map_error(fn(e) { DecodeError(e) }),
+  )
+
+  Ok(decoded_objects)
 }
 
 /// Looks up a value in a table by key
@@ -108,13 +130,17 @@ pub fn lookup(
     |> result.map_error(fn(e) { SystemException(e) }),
   )
 
-  let values =
-    kv_pairs
+  use decoded_objects <- result.try(
+    dynamic.list(of: dynamic.tuple2(dynamic.string, table.decoder))(kv_pairs)
+    |> result.map_error(fn(e) { DecodeError(e) }),
+  )
+
+  let created_objects =
+    decoded_objects
     |> list.map(fn(result) { result.1 })
 
-  use decoded_values <- core.decode_recursively(values, table.decoder, [])
-
-  Ok(decoded_values)
+  // use decoded_values <- core.decode_recursively(values, table.decoder, [])
+  Ok(created_objects)
 }
 
 /// Deletes all objects with the given key from the table

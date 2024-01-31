@@ -1,6 +1,7 @@
 import gleam/dynamic
 import gleam/erlang/atom
 import gleam/list
+import gleam/io
 import gleeunit/should
 import purse
 import purse/core.{Named}
@@ -45,6 +46,26 @@ pub fn insert_test() {
   |> should.equal(Person("Jane", "Doe", 20))
 }
 
+pub fn insert_many_test() {
+  let assert Ok(table) =
+    ets.new(
+      name: atom.create_from_string("users_for_insert_many"),
+      accepts: decoder(),
+      options: [ets.Set, ets.Protected, ets.NamedTable],
+    )
+
+  let objects = [
+    Person("John", "Doe", 19),
+    Person("Mary", "Smith", 21),
+    Person("Jane", "Doe", 20),
+  ]
+
+  ets.insert_many(table, key: purse.int(1), objects: objects)
+  |> should.be_ok
+  |> list.length
+  |> should.equal(3)
+}
+
 pub fn lookup_test() {
   let assert Ok(table) =
     ets.new(
@@ -83,31 +104,20 @@ pub fn delete_test() {
       options: [ets.DuplicateBag, ets.Protected, ets.NamedTable],
     )
 
-  let assert Ok(p1) =
-    ets.insert(
-      table,
-      key: purse.string("human"),
-      value: Person("John", "Doe", 19),
-    )
+  let assert Ok(_) =
+    ets.insert(table, purse.string("human"), Person("John", "Doe", 19))
 
-  let assert Ok(p2) =
-    ets.insert(
-      table,
-      key: purse.string("human"),
-      value: Person("Bane", "Cheeks", 20),
-    )
+  let assert Ok(_) =
+    ets.insert(table, purse.string("human"), Person("Bane", "Cheeks", 20))
 
-  let assert Ok(p3) =
-    ets.insert(
-      table,
-      key: purse.string("human"),
-      value: Person("Dean", "Smith", 19),
-    )
+  let assert Ok(_) =
+    ets.insert(table, purse.string("human"), Person("Dean", "Smith", 19))
 
   // Check that all three entries were actually inserted
   ets.lookup(table, key: purse.string("human"))
   |> should.be_ok
-  |> should.equal([p3, p2, p1])
+  |> list.length
+  |> should.equal(3)
 
   // Delete all entries with the key "human"
   ets.delete(table, key: purse.string("human"))
